@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>מרוץ השורשים והזמנים</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700;900&display=swap');
+
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: 'Fredoka', sans-serif; 
+            user-select: none; 
+            touch-action: manipulation; 
+            background-color: #00d4ff; 
+            overflow: hidden;
+        }
+
+        * { box-sizing: border-box; }
+        button { font-family: 'Fredoka', sans-serif; outline: none; }
+
+        .hidden { display: none !important; }
+
+        .comic-bg {
+            background: radial-gradient(circle, #00d4ff 0%, #4a0080 100%);
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .halftone-overlay {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(#000 15%, transparent 16%), radial-gradient(#000 15%, transparent 16%);
+            background-size: 8px 8px;
+            background-position: 0 0, 4px 4px;
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .comic-stroke { text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 0 2px 0 #000, 2px 0 0 #000; }
+        .comic-stroke-sm { text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; }
+
+        .credit-tag {
+            position: absolute; top: 80px; left: 15px; 
+            background: #fffb00; padding: 5px 10px; 
+            border-radius: 0px; font-size: 0.8rem; color: #fff; 
+            z-index: 100; pointer-events: none; 
+            font-weight: 900; 
+            border: 3px solid #000;
+            transform: rotate(-3deg);
+            box-shadow: 4px 4px 0px #000;
+        }
+        .credit-menu { font-weight: 900; margin-top: 25px; font-size: 0.9rem;}
+
+        .comic-menu-card { 
+            background: #ffffff;
+            padding: 3rem 2rem; 
+            text-align: center; 
+            border: 6px solid #000; 
+            z-index: 10; width: 90%; max-width: 480px;
+            margin: auto;
+            box-shadow: 10px 10px 0px #ff007f;
+            position: relative;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .comic-title-main { color: #fffb00; font-size: 3rem; margin: 0; font-weight: 900; line-height: 1.1; text-transform: uppercase; text-shadow: 3px 3px 0 #000, -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 0 5px 0px #ff007f;}
+        .comic-subtitle { font-size: 1.3rem; color: #000; margin: 1.5rem 0; font-weight: 900; background: #00d4ff; display: inline-block; padding: 5px 15px; border: 3px solid #000; transform: rotate(2deg);}
+
+        .comic-btn-primary { 
+            background: #ff007f; color: #ffffff; border: 4px solid #000; 
+            padding: 15px 20px; font-size: 1.6rem; cursor: pointer; 
+            box-shadow: 4px 4px 0 #000; font-weight: 900; width: 100%; display: block; transition: transform 0.1s;
+            text-transform: uppercase;
+        }
+        .comic-btn-primary:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0 #000;}
+
+        .comic-btn-secondary { 
+            background: #fffb00; color: #000; border: 4px solid #000; 
+            padding: 10px 20px; font-size: 1.3rem; cursor: pointer; 
+            font-weight: 900; width: 100%; box-shadow: 4px 4px 0 #000;
+        }
+        .comic-btn-secondary:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0 #000;}
+
+        .game-board { display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; z-index: 1; height: 100%;}
+
+        .comic-top-bar { height: 65px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; background: #fffb00; border-bottom: 5px solid #000; flex-shrink: 0; z-index: 20;}
+        .game-timer { background: #ff007f; color: #fff; border: 3px solid #000; padding: 5px 12px; font-weight: 900; font-size: 1.3rem; box-shadow: 3px 3px 0 #000; transform: rotate(-2deg);}
+        .score-board { font-size: 1.5rem; font-weight: 900; color: #fff; }
+        .top-actions { display: flex; gap: 10px; align-items: center; }
+
+        .comic-exit-btn { background: #ff2a2a; color: #fff; border: 3px solid #000; padding: 5px 15px; font-weight: 900; font-size: 1.2rem; cursor: pointer; box-shadow: 3px 3px 0 #000;}
+        .comic-icon-btn { background: #00d4ff; color: #000; border: 3px solid #000; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.5rem; font-weight: 900; box-shadow: 3px 3px 0 #000;}
+
+        .comic-root-display { 
+            margin: 10px auto; background: #fff; padding: 10px 30px; 
+            text-align: center; border: 6px solid #ff007f; 
+            box-shadow: 6px 6px 0px #000; min-width: 250px; flex-shrink: 0; z-index: 10;
+            transform: rotate(-1deg);
+        }
+        .root-label { font-size: 1rem; color: #000; font-weight: 900; background: #fffb00; display: inline-block; padding: 2px 10px; border: 2px solid #000; margin-bottom: 5px;}
+        .the-root { font-size: 2.8rem; font-weight: 900; line-height: 1; margin: 0; color: #fff; }
+        .comic-status { padding: 4px 15px; font-weight: 900; animation: pulse 1s infinite; margin-top: 5px; display: inline-block; font-size: 1rem; border: 3px solid #000; box-shadow: 3px 3px 0 #000;}
+        .prop-status { background: #00d4ff; color: #000; }
+        .combo-status { background: #ff8c00; color: #fff; }
+
+        .hand-container { display: flex; width: 100vw; overflow-x: auto; padding: 15px 20px; align-items: center; justify-content: flex-start; flex-shrink: 0; scrollbar-width: none;}
+        .comp-area { margin-bottom: 0px; justify-content: center; padding-top: 10px; }
+        .table-center { display: flex; justify-content: center; align-items: center; gap: 40px; margin: 10px 0; flex-shrink: 0;}
+        .pile { position: relative; width: 130px; height: 185px; }
+        .deck { cursor: pointer; transition: transform 0.1s; }
+        .deck:active { transform: scale(0.95); }
+
+        .comic-deck-info { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background: #ff007f; color: #ffffff; border: 4px solid #000; 
+            padding: 5px 15px; font-weight: 900; font-size: 2rem; 
+            pointer-events: none; box-shadow: 5px 5px 0px #000;
+            animation: pulse-icon 0.8s infinite alternate; z-index: 5;
+        }
+
+        .end-sequence-msg {
+            background: #ffffff; color: #ff007f; border: 3px solid #000;
+            padding: 6px 10px; font-weight: 900; font-size: 1rem; 
+            text-align: center; line-height: 1.1; animation: pulse-icon 1.5s infinite;
+            position: relative; box-shadow: 3px 3px 0px #000; transform: rotate(-5deg);
+        }
+        .end-sequence-msg::after {
+            content: ''; position: absolute; left: -12px; top: 50%; transform: translateY(-50%);
+            border-width: 8px 12px 8px 0; border-style: solid; border-color: transparent #000 transparent transparent;
+        }
+
+        .msg-container { display: flex; justify-content: center; min-height: 40px; margin-bottom: 5px; flex-shrink: 0;}
+        .comic-msg-bubble { background: #fff; padding: 10px 30px; border: 4px solid #000; font-weight: 700; letter-spacing: 1px; font-size: 1.3rem; color: #000; text-align: center; box-shadow: 5px 5px 0 #00d4ff; transform: rotate(1deg);}
+
+        .player-area { margin-top: auto; padding-bottom: 25px; gap: 15px; }
+
+        /* --- קלפים --- */
+        .comic-card { 
+            width: 120px; height: 175px; position: relative; cursor: pointer; 
+            padding: 0; box-shadow: 6px 6px 0px #000; 
+            flex-shrink: 0; transition: transform 0.2s, margin 0.2s;
+            border-style: solid; border-radius: 8px;
+            user-select: none;
+        }
+
+        .comp-area .comic-card { margin-right: -45px; }
+        .comp-area .comic-card:first-child { margin-right: 0; }
+        .comic-card.small { width: 75px; height: 110px; border-width: 3px !important; }
+        .player-area .comic-card:active, .player-area .comic-card:hover { transform: translateY(-15px) rotate(-2deg); z-index: 100 !important; }
+
+        .card-inner-front { width: 100%; height: 100%; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; background: rgba(255, 255, 255, 0.4); pointer-events: none;}
+        .front-halftone { position: absolute; inset: 0; background-image: radial-gradient(#000 10%, transparent 11%); background-size: 6px 6px; opacity: 0.05;}
+
+        .center-comic-oval { background: #ffffff; width: 140%; height: 60%; transform: rotate(-25deg); display: flex; justify-content: center; align-items: center; border: 4px solid #000; box-shadow: inset 4px 4px 0 rgba(0,0,0,0.1);}
+        .oval-content { transform: rotate(25deg); display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; position: relative; z-index: 2;}
+
+        .center-explosion-wrapper { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; position: absolute;}
+        .explosion-svg { position: absolute; width: 160%; height: 160%; top: -30%; left: -30%; z-index: 1;}
+        .explosion-content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+
+        .word-text { font-size: 1.5rem; font-weight: 900; text-align: center; line-height: 1.1; padding: 0 5px; }
+        .special-title { font-size: 1.2rem; font-weight: 900; text-align: center; margin-top: 5px; line-height: 1;}
+
+        .special-bottom-text { position: absolute; bottom: 10px; left: 0; right: 0; text-align: center; color: #fff; font-size: 1.3rem; font-weight: 900; z-index: 10; line-height: 1;}
+
+        .plus2-comic-text { 
+            font-size: 4rem; font-weight: 900; line-height: 1; animation: comic-pulse 1.2s infinite alternate; letter-spacing: -2px; color: #fff;
+            text-shadow: 4px 4px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
+        }
+        .stop-comic-text { font-size: 2.5rem; font-weight: 900; line-height: 1; animation: stop-pulse 1.8s infinite ease-in-out; }
+
+        .small .word-text { font-size: 0.9rem; }
+        .small .special-title { font-size: 0.8rem; margin-top: 2px;}
+        .small .special-bottom-text { font-size: 0.85rem; bottom: 6px; }
+        .small .plus2-comic-text { font-size: 2.2rem; }
+        .small .stop-comic-text { font-size: 1.4rem; }
+
+        .corner-text { position: absolute; font-size: 1rem; font-weight: 900; color: #000;}
+        .corner-text.top { top: 6px; left: 8px; }
+        .corner-text.bottom { bottom: 6px; right: 8px; transform: rotate(180deg); }
+        .small .corner-text { font-size: 0.75rem; top: 4px; left: 6px;}
+
+        .card-inner-back { width: 100%; height: 100%; background: #00d4ff; position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; pointer-events: none;}
+        .back-halftone { position: absolute; inset: 0; background-image: radial-gradient(#000 20%, transparent 20%); background-size: 10px 10px; opacity: 0.2;}
+
+        .center-oval-back { background: #fffb00; width: 75px; height: 75px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 5px solid #000; z-index: 2; box-shadow: 4px 4px 0 #ff007f;}
+        .small .center-oval-back { width: 45px; height: 45px; border-width: 3px; box-shadow: 2px 2px 0 #ff007f;}
+
+        .back-text { color: #000; font-weight: 900; font-size: 1.5rem; transform: rotate(-10deg);}
+        .small .back-text { font-size: 0.9rem; }
+
+        /* --- Modals --- */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0, 0.8); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 15px;}
+        .comic-modal { background: #ffffff; padding: 25px 20px; border: 6px solid #000; box-shadow: 10px 10px 0 #00d4ff; text-align: center; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;}
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 4px solid #000; padding-bottom: 10px;}
+        .modal-header h2 { margin: 0; color: #000; font-weight: 900; font-size: 1.8rem;}
+        .close-btn { background: #ff2a2a; border: 3px solid #000; font-size: 1.2rem; color: #fff; cursor: pointer; font-weight: bold; width: 35px; height: 35px; box-shadow: 2px 2px 0 #000;}
+
+        .instructions { text-align: right; }
+        .rule { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; background: #f0f0f0; padding: 12px; border: 3px solid #000; font-size: 1.1rem; color: #000; box-shadow: 3px 3px 0 #ccc;}
+        .icon-wrap { background: #fff; width: 50px; height: 50px; border-radius: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: 3px solid #000; flex-shrink: 0; box-shadow: 3px 3px 0 #ff007f;}
+
+        .options-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 15px; }
+        .comic-opt-btn { background: #fffb00; color: #000; padding: 12px 15px; font-size: 1.3rem; font-weight: 900; flex: 1 1 45%; border: 4px solid #000; box-shadow: 4px 4px 0 #000;}
+        .comic-opt-btn:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 #000; }
+
+        .picker-modal .hand-peek { justify-content: center; margin-right: 0;}
+        .hand-peek { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 5px; margin-top: 10px; border-top: 2px dashed #ccc; }
+        .mini-card { width: 45px; height: 65px; border-radius: 6px; display: flex; align-items: center; justify-content: center; padding: 2px; border: 2px solid #000; box-shadow: 2px 2px 0 rgba(0,0,0,0.5); }
+        .mini-oval { width: 100%; height: 100%; border-radius: 4px; display: flex; justify-content: center; align-items: center; text-align: center; background: #ffffff; padding: 1px;}
+        .mini-oval span { font-weight: 900; font-size: 0.65rem; line-height: 1.1; word-break: break-word; }
+        .hand-peek-title { text-align: right; font-weight: bold; color: #ff007f; margin-top: 10px; font-size: 1.1rem;}
+
+        .win-modal h2 { font-size: 3rem; color: #fff; text-shadow: 3px 3px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 0 4px 0 #ff007f; margin-bottom: 5px;}
+        .win-time { font-size: 1.5rem; color: #fff; font-weight: 900; margin-bottom: 25px;}
+
+        /* --- Animations --- */
+        @keyframes flame-flicker { 0%, 100% { transform: scale(1) translateY(0) rotate(0); } 50% { transform: scale(1.15, 1.25) translateY(-4px) rotate(3deg); } }
+        .flame-anim { transform-origin: 50% 80%; transform-box: fill-box; animation: flame-flicker 1.2s ease-in-out infinite; }
+        @keyframes stop-pulse { 0%, 100% { transform: scale(1) rotate(-2deg); opacity: 1; } 50% { transform: scale(1.15) rotate(2deg); opacity: 0.9; } }
+        @keyframes sparkle-blink { 0%, 100% { opacity: 0; transform: scale(0.5) translateY(0) rotate(0deg); } 50% { opacity: 1; transform: scale(1.5) translateY(-5px) rotate(45deg); } }
+        .sparkle-1 { transform-origin: center; transform-box: fill-box; animation: sparkle-blink 1.2s infinite 0s; }
+        .sparkle-2 { transform-origin: center; transform-box: fill-box; animation: sparkle-blink 1.5s infinite 0.4s; }
+        .sparkle-3 { transform-origin: center; transform-box: fill-box; animation: sparkle-blink 1.3s infinite 0.8s; }
+        @keyframes hourglass-flip { 0%, 20% { transform: rotate(0deg) scale(1); } 40%, 80% { transform: rotate(180deg) scale(1.1); } 95%, 100% { transform: rotate(360deg) scale(1); } }
+        .hourglass-anim { transform-origin: center; transform-box: fill-box; animation: hourglass-flip 5s ease-in-out infinite; }
+        @keyframes comic-pulse { 0%, 100% { transform: scale(1) rotate(-5deg); } 50% { transform: scale(1.2) rotate(5deg); } }
+        @keyframes pulse-icon { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        /* --- התאמות למסכים קטנים --- */
+        @media (max-width: 450px) {
+            .comic-title-main { font-size: 2.5rem !important; }
+            .the-root { font-size: 1.8rem; }
+            .comic-root-display { padding: 6px 20px; margin-bottom: 5px;}
+            .table-center { gap: 15px; margin: 10px 0; }
+            .pile { width: 100px; height: 145px; }
+            .comic-card:not(.small) { width: 100px; height: 145px; }
+            .player-area { gap: 10px; } 
+            .comp-area .comic-card { margin-right: -30px !important; } 
+            .word-text { font-size: 1.1rem; }
+            .special-title { font-size: 0.9rem; }
+            .game-timer { font-size: 1rem; padding: 4px 10px; }
+            .end-sequence-msg { font-size: 0.85rem; padding: 5px 8px; }
+            .end-sequence-msg::after { border-width: 6px 8px 6px 0; left: -8px; }
+            .special-bottom-text { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- מסך תפריט ראשי -->
+    <div id="menu-screen" class="comic-bg">
+        <div class="halftone-overlay"></div>
+        <div class="comic-menu-card">
+            <h1 class="comic-title-main">מרוץ השורשים והזמנים</h1>
+            <p class="comic-subtitle">מלחמת שורשים וזמנים מטורפת!</p>
+            <div style="margin-top: 20px;">
+                <button class="comic-btn-primary" style="padding: 20px; font-size: 2rem;" onclick="startGame()">
+                    ▶️ התחל משחק!
+                </button>
+            </div>
+            <div class="credit-menu">יצרה בעזרת בינה מלאכותית: מורן קמיל גלברג - הוראה מותאמת</div>
+        </div>
+    </div>
+
+    <!-- מסך המשחק -->
+    <div id="game-screen" class="game-board comic-bg hidden">
+        <div class="halftone-overlay"></div>
+        <div class="credit-tag comic-stroke-sm">
+            יצרה בעזרת בינה מלאכותית:<br/>מורן קמיל גלברג - הוראה מותאמת
+        </div>
+        
+        <div class="comic-top-bar">
+            <div class="game-timer comic-stroke" id="timer-display">⏱️ 00:00</div>
+            <div class="score-board comic-stroke" id="score-display">🤖 0 | 🧑 0</div>
+            <div class="top-actions">
+                <button class="comic-icon-btn" onclick="showModal('instructions-modal')">❓</button>
+                <button class="comic-exit-btn" onclick="exitGame()">X</button>
+            </div>
+        </div>
+
+        <div class="comp-area hand-container" id="computer-hand"></div>
+
+        <div class="comic-root-display">
+            <div class="root-label">שורש נוכחי:</div>
+            <div class="the-root comic-stroke" id="current-group-display">---</div>
+            <div class="comic-status prop-status hidden" id="prop-status">⏳ זמן/צורה: ---</div>
+            <div class="comic-status combo-status hidden" id="combo-status">🔥 הכל הולך!</div>
+        </div>
+
+        <div class="table-center">
+            <div class="end-sequence-msg hidden" id="end-sequence-msg">סיום<br/>רצף</div>
+            
+            <div class="pile deck" onclick="handleDeckClick()">
+                <div class="comic-card back">
+                    <div class="card-inner-back">
+                        <div class="back-halftone"></div>
+                        <div class="center-oval-back"><span class="back-text">קופה</span></div>
+                    </div>
+                </div>
+                <div class="comic-deck-info comic-stroke hidden" id="plus2-stack-display">+2</div>
+            </div>
+
+            <div class="pile discard" id="discard-pile"></div>
+        </div>
+        
+        <div class="msg-container">
+            <div class="comic-msg-bubble" id="msg-display">התחלנו! בום!</div>
+        </div>
+
+        <div class="player-area hand-container player-hand" id="player-hand"></div>
+    </div>
+
+    <!-- חלון הוראות -->
+    <div id="instructions-modal" class="overlay hidden">
+        <div class="comic-modal instructions">
+            <div class="modal-header">
+                <h2>💥 איך משחקים?</h2>
+                <button class="close-btn" onclick="hideModal('instructions-modal')">✖</button>
+            </div>
+            <div class="rules-content">
+                <div class="rule"><div class="icon-wrap">🎯</div><div><strong>המטרה:</strong> להיפטר מכל הקלפים.</div></div>
+                <div class="rule"><div class="icon-wrap">🃏</div><div><strong>רגיל:</strong> מניחים קלף מאותו <u>שורש</u> של הקלף שעל השולחן.</div></div>
+                <div class="rule"><div class="icon-wrap" id="icon-hourglass-wrap"></div><div><strong>בוא נשנה ל...:</strong> בחרו זמן/צורה, ושימו את <b>כל</b> הקלפים המתאימים. לסיום לחצו על הקופה.</div></div>
+                <div class="rule"><div class="icon-wrap" id="icon-flame-wrap"></div><div><strong>הכל הולך:</strong> זרקו את כל הקלפים מאותו השורש בזה אחר זה!</div></div>
+                <div class="rule"><div class="icon-wrap" id="icon-wand-wrap"></div><div><strong>החלפה:</strong> שנו לשורש אחר לבחירתכם.</div></div>
+                <div class="rule">
+                    <div class="icon-wrap"><span style="font-weight: 900; color: #ff007f; font-size: 1.4rem;">+2</span></div>
+                    <div><strong>+2:</strong> היריב מושך 2 קלפים.</div>
+                </div>
+                <div class="rule">
+                    <div class="icon-wrap"><span style="font-weight: 900; color: #ff2a2a; font-size: 1rem;">עצור!</span></div>
+                    <div><strong>עצור:</strong> תור היריב מתבטל.</div>
+                </div>
+            </div>
+            <button class="comic-btn-primary" onclick="hideModal('instructions-modal')">הבנתי!</button>
+        </div>
+    </div>
+
+    <!-- חלון בורר (שורש/זמן) -->
+    <div id="picker-modal" class="overlay hidden">
+      <div class="comic-modal picker-modal">
+        <h3 id="picker-title">בחרו:</h3>
+        <div class="options-grid" id="picker-options"></div>
+        <div class="hand-peek-title">👀 הקלפים שלכם:</div>
+        <div class="hand-peek" id="picker-hand-peek"></div>
+      </div>
+    </div>
+
+    <!-- חלון ניצחון -->
+    <div id="win-modal" class="overlay hidden">
+        <div class="comic-modal win-modal">
+            <h2 class="comic-stroke" id="win-title">ניצחון!</h2>
+            <div class="win-time comic-stroke-sm" id="win-time">זמן: 00:00</div>
+            <button class="comic-btn-primary" onclick="startGame()">משחק חוזר</button>
+            <button class="comic-btn-secondary" onclick="exitGame()" style="margin-top: 10px;">חזרה לתפריט</button>
+        </div>
+    </div>
+
+    <script>
+        // --- פונקציות ואייקונים בסיסיים ---
+        const shuffleArray = (array) => {
+            const newArr = [...array];
+            for (let i = newArr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+            }
+            return newArr;
+        };
+
+        const getIconFlameStr = (size) => `
+            <svg viewBox="0 0 64 64" width="${size}" height="${size}">
+                <defs>
+                    <linearGradient id="flameGrad" x1="0" y1="1" x2="0" y2="0">
+                        <stop offset="0%" stop-color="#ffffff"/> 
+                        <stop offset="100%" stop-color="#fffb00"/> 
+                    </linearGradient>
+                </defs>
+                <g class="flame-anim">
+                    <path d="M32 4 C32 4 12 26 12 44 A20 20 0 0 0 52 44 C52 26 32 4 32 4 Z" fill="url(#flameGrad)" stroke="#000" stroke-width="3"/>
+                    <path d="M32 22 C32 22 22 36 22 48 A10 10 0 0 0 42 48 C42 36 32 22 32 22 Z" fill="#ff5500"/>
+                </g>
+            </svg>`;
+
+        const getIconHourglassStr = (size) => `
+            <svg viewBox="0 0 64 64" width="${size}" height="${size}">
+                <g class="hourglass-anim">
+                    <path d="M16 6 L48 6 L48 14 L36 32 L48 50 L48 58 L16 58 L16 50 L28 32 L16 14 Z" fill="#00d4ff" stroke="#000" stroke-width="4" stroke-linejoin="round"/>
+                    <path d="M20 14 L44 14 L36 26 L28 26 Z" fill="#fffb00" /> 
+                    <path d="M26 40 L38 40 L44 50 L20 50 Z" fill="#9d00ff" /> 
+                    <rect x="12" y="2" width="40" height="6" fill="#ffffff" stroke="#000" stroke-width="3" rx="3"/>
+                    <rect x="12" y="56" width="40" height="6" fill="#ffffff" stroke="#000" stroke-width="3" rx="3"/>
+                </g>
+            </svg>`;
+
+        const getIconWandStr = (size) => `
+            <svg viewBox="0 0 64 64" width="${size}" height="${size}">
+                <path d="M14 54 L44 24 L48 28 L18 58 Z" fill="#4a0080" stroke="#000" stroke-width="3"/>
+                <path d="M44 24 L52 16 L56 20 L48 28 Z" fill="#ffffff" stroke="#000" stroke-width="2"/>
+                <path d="M52 6 L54 13 L61 15 L54 17 L52 24 L50 17 L43 15 L50 13 Z" fill="#ff007f" class="sparkle-1" stroke="#000" stroke-width="1"/> 
+                <circle cx="30" cy="14" r="5" fill="#fffb00" class="sparkle-2" stroke="#000" stroke-width="1"/> 
+                <path d="M60 28 L62 33 L67 35 L62 37 L60 42 L58 37 L53 35 L58 33 Z" fill="#9d00ff" class="sparkle-3" stroke="#000" stroke-width="1"/> 
+                <circle cx="40" cy="40" r="4" fill="#fffb00" class="sparkle-1" stroke="#000" stroke-width="1"/> 
+            </svg>`;
+
+        // הזרקת אייקונים לחלון ההוראות
+        document.getElementById('icon-hourglass-wrap').innerHTML = getIconHourglassStr(24);
+        document.getElementById('icon-flame-wrap').innerHTML = getIconFlameStr(24);
+        document.getElementById('icon-wand-wrap').innerHTML = getIconWandStr(24);
+
+        // --- נתונים ---
+        const GAME_DATA = {
+            title: "מרוץ השורשים והזמנים",
+            groupLabel: "שורש",
+            propertyLabel: "זמן/צורה",
+            groups: [
+                { id: "כ.ת.ב", items: [{text: "לִכְתּוֹב", prop: "שם פועל"}, {text: "כְּתִיבָה", prop: "שם פעולה"}, {text: "כָּתַבְתִּי", prop: "עבר"}, {text: "כּוֹתֵב", prop: "הווה"}, {text: "יִכְתְּבוּ", prop: "עתיד"}] }, 
+                { id: "ק.ר.א", items: [{text: "לִקְרוֹא", prop: "שם פועל"}, {text: "קְרִיאָה", prop: "שם פעולה"}, {text: "קָרָאנוּ", prop: "עבר"}, {text: "קוֹרֵאת", prop: "הווה"}, {text: "תִּקְרָא", prop: "עתיד"}] }, 
+                { id: "ק.ר.ע", items: [{text: "לִקְרוֹעַ", prop: "שם פועל"}, {text: "קְרִיעָה", prop: "שם פעולה"}, {text: "קָרַעְתָּ", prop: "עבר"}, {text: "קוֹרַעַת", prop: "הווה"}, {text: "אֶקְרַע", prop: "עתיד"}] }, 
+                { id: "מ.צ.א", items: [{text: "לִמְצוֹא", prop: "שם פועל"}, {text: "מְצִיאָה", prop: "שם פעולה"}, {text: "מָצְאוּ", prop: "עבר"}, {text: "מוֹצֵאת", prop: "הווה"}, {text: "תִּמְצְאוּ", prop: "עתיד"}] }, 
+                { id: "שׁ.כ.ח", items: [{text: "לִשְׁכּוֹחַ", prop: "שם פועל"}, {text: "שִׁכְחָה", prop: "שם פעולה"}, {text: "שָׁכַחְתִּי", prop: "עבר"}, {text: "שׁוֹכֵחַ", prop: "הווה"}, {text: "יִשְׁכַּח", prop: "עתיד"}] }, 
+                { id: "פ.ת.ח", items: [{text: "לִפְתּוֹחַ", prop: "שם פועל"}, {text: "פְּתִיחָה", prop: "שם פעולה"}, {text: "פָּתַחְנוּ", prop: "עבר"}, {text: "פּוֹתַחַת", prop: "הווה"}, {text: "אֶפְתַּח", prop: "עתיד"}] }, 
+                { id: "שׁ.מ.ע", items: [{text: "לִשְׁמוֹעַ", prop: "שם פועל"}, {text: "שְׁמִיעָה", prop: "שם פעולה"}, {text: "שָׁמַעְתֶּם", prop: "עבר"}, {text: "שׁוֹמַעַת", prop: "הווה"}, {text: "אֶשְׁמַע", prop: "עתיד"}] }, 
+                { id: "צ.פ.ה", items: [{text: "לִצְפּוֹת", prop: "שם פועל"}, {text: "צְפִיָּה", prop: "שם פעולה"}, {text: "צָפִיתָ", prop: "עבר"}, {text: "צוֹפִים", prop: "הווה"}, {text: "תִּצְפֶּה", prop: "עתיד"}] },
+                { id: "שׁ.מ.ר", items: [{text: "לִשְׁמוֹר", prop: "שם פועל"}, {text: "שְׁמִירָה", prop: "שם פעולה"}, {text: "שָׁמַר", prop: "עבר"}, {text: "שׁוֹמֵר", prop: "הווה"}, {text: "יִשְׁמֹר", prop: "עתיד"}] },
+                { id: "ל.מ.ד", items: [{text: "לִלְמוֹד", prop: "שם פועל"}, {text: "לְמִידָה", prop: "שם פעולה"}, {text: "לָמַדְנוּ", prop: "עבר"}, {text: "לוֹמְדִים", prop: "הווה"}, {text: "תִּלְמְדוּ", prop: "עתיד"}] }
+            ],
+            properties: ["שם פועל", "שם פעולה", "עבר", "הווה", "עתיד"]
+        };
+
+        const REGULAR_CARD_COLOR = "#fef08a";
+        const SPECIALS = [
+            { type: "combo", label: "הכל הולך!", count: 5 },
+            { type: "stop", label: "עצור!", count: 8 },
+            { type: "changeProp", label: "בוא נשנה ל...", count: 8 }, 
+            { type: "changeGroup", label: "החלפה", count: 8 },   
+            { type: "plus2", label: "+2", count: 10 },
+        ];
+
+        const getSpecialColor = (type) => {
+            switch(type) {
+                case 'stop': return '#ff2a2a'; 
+                case 'plus2': return '#ff007f'; 
+                case 'changeProp': return '#9d00ff'; 
+                case 'changeGroup': return '#00d4ff'; 
+                case 'combo': return '#ff8c00'; 
+                default: return '#fff';
+            }
+        };
+
+        const getSpecialIconHTML = (type, size) => {
+            switch(type) {
+                case 'changeProp': return getIconHourglassStr(size);
+                case 'changeGroup': return getIconWandStr(size);
+                case 'combo': return getIconFlameStr(size);
+                default: return '';
+            }
+        };
+
+        // --- סאונד ---
+        class SoundController {
+            constructor() { 
+                this.ctx = null; 
+                this.enabled = true;
+            }
+            init() {
+                if (this.ctx || !this.enabled) return;
+                try {
+                    const AudioCtor = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtor) {
+                        this.ctx = new AudioCtor();
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        gain.gain.value = 0;
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(0); osc.stop(0.01);
+                    }
+                } catch(e) { this.enabled = false; }
+            }
+            play(effect) {
+                if (!this.enabled || !this.ctx) return;
+                try {
+                    if (this.ctx.state === 'suspended') this.ctx.resume();
+                    const t = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    if (effect === "flip") {
+                        osc.type = "sine";
+                        osc.frequency.setValueAtTime(800, t);
+                        osc.frequency.exponentialRampToValueAtTime(300, t + 0.05);
+                        gain.gain.setValueAtTime(0.05, t);
+                        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+                        osc.start(t); osc.stop(t + 0.05); 
+                    } 
+                    else if (effect === "place") {
+                        osc.type = "triangle";
+                        osc.frequency.setValueAtTime(400, t);
+                        osc.frequency.exponentialRampToValueAtTime(100, t + 0.08);
+                        gain.gain.setValueAtTime(0.05, t);
+                        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+                        osc.start(t); osc.stop(t + 0.08); 
+                    }
+                    else if (effect === "win") {
+                        osc.type = "sine";
+                        osc.frequency.setValueAtTime(400, t);
+                        osc.frequency.setValueAtTime(600, t + 0.1);
+                        osc.frequency.setValueAtTime(800, t + 0.2);
+                        gain.gain.setValueAtTime(0.1, t);
+                        gain.gain.linearRampToValueAtTime(0, t + 0.4);
+                        osc.start(t); osc.stop(t + 0.4);
+                    }
+                } catch(e) {}
+            }
+        }
+        const audio = new SoundController();
+
+        // --- State ---
+        let state = {
+            gameStarted: false,
+            timer: 0,
+            timerInterval: null,
+            deck: [],
+            pile: [],
+            pHand: [],
+            cHand: [],
+            turn: "player",
+            currentGroup: null,
+            activeProp: null,
+            activeCombo: null,
+            plus2Stack: 0,
+            msg: "התחלנו! בום!",
+            winner: null,
+            computerTimeout: null,
+            pickerMode: null // 'group' or 'prop'
+        };
+
+        const formatTime = (totalSeconds) => {
+            const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+            const s = (totalSeconds % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        };
+
+        // --- Rendering ---
+        const generateCardHTML = (data, options = {}) => {
+            const { isSmall = false, zIndex = 0, customClass = '' } = options;
+            
+            if (!data) return '';
+
+            const isSpecial = !!data.special;
+            const isPlus2 = data.special === 'plus2';
+            const isStop = data.special === 'stop';
+            const isChangeGroup = data.special === 'changeGroup';
+            const isChangeProp = data.special === 'changeProp';
+            
+            const bgColor = isSpecial ? getSpecialColor(data.special) : REGULAR_CARD_COLOR;
+            const ovalTextColor = isSpecial ? bgColor : "#000000"; 
+            const iconSize = isSmall ? 30 : (isChangeGroup ? 75 : 55); 
+
+            let borderColor = "#ff007f"; 
+            let borderThickness = "4px"; 
+            if (isSpecial) {
+                switch(data.special) {
+                    case 'changeProp': borderColor = '#00d4ff'; break; 
+                    case 'changeGroup': borderColor = '#9d00ff'; break; 
+                    default: borderColor = '#ffffff'; 
+                }
+            }
+
+            let contentHTML = '';
+            if (isPlus2) {
+                contentHTML = `<span class="plus2-comic-text">+2</span>`;
+            } else if (isStop) {
+                contentHTML = `<span class="stop-comic-text" style="color: ${ovalTextColor}">עצור!</span>`;
+            } else if (isChangeGroup) {
+                contentHTML = getSpecialIconHTML(data.special, iconSize);
+            } else if (isChangeProp) {
+                contentHTML = `
+                    ${getSpecialIconHTML(data.special, iconSize)}
+                    <span class="special-title comic-stroke-sm" style="color: #fffb00">בוא נשנה ל...</span>
+                `;
+            } else if (isSpecial) {
+                contentHTML = `
+                    ${getSpecialIconHTML(data.special, iconSize)}
+                    <span class="special-title" style="color: ${ovalTextColor}; text-shadow: 1px 1px 0 #000">
+                        ${data.label === "החלפה" ? `שנה ${GAME_DATA.groupLabel}` : data.label}
+                    </span>
+                `;
+            } else {
+                contentHTML = `<span class="word-text" style="color: ${ovalTextColor}">${data.word}</span>`;
+            }
+
+            const explosionSVG = isPlus2 ? `
+                <svg viewBox="0 0 100 100" class="explosion-svg" preserveAspectRatio="none">
+                    <path d="M 50 12 L 58 24 L 80 12 L 70 32 L 88 42 L 72 52 L 82 75 L 60 65 L 50 88 L 40 65 L 18 75 L 28 52 L 12 42 L 30 32 L 20 12 L 42 24 Z" fill="#fffb00" stroke="#000" stroke-width="4" stroke-linejoin="round" transform="translate(4,4)"/>
+                    <path d="M 50 12 L 58 24 L 80 12 L 70 32 L 88 42 L 72 52 L 82 75 L 60 65 L 50 88 L 40 65 L 18 75 L 28 52 L 12 42 L 30 32 L 20 12 L 42 24 Z" fill="#ffffff" stroke="#000" stroke-width="3" stroke-linejoin="round"/>
+                </svg>
+            ` : '';
+
+            return `
+                <div class="comic-card front ${isSmall ? 'small' : ''} ${customClass}" 
+                     style="background-color: ${bgColor}; border-color: ${borderColor}; border-width: ${borderThickness}; z-index: ${zIndex};"
+                     data-id="${data.id}">
+                  <div class="card-inner-front">
+                      <div class="front-halftone"></div>
+                      ${!isSpecial ? `<div class="corner-text top">${data.group}</div>` : ''}
+                      ${!isSpecial ? `<div class="corner-text bottom">${data.group}</div>` : ''}
+                      
+                      <div class="${isPlus2 ? "center-explosion-wrapper" : "center-comic-oval"}" ${isChangeGroup ? 'style="transform: rotate(-15deg) translateY(-8px)"' : ''}>
+                          ${explosionSVG}
+                          <div class="${isPlus2 ? "explosion-content" : "oval-content"}">
+                              ${contentHTML}
+                          </div>
+                      </div>
+                      ${isChangeGroup ? `<div class="special-bottom-text comic-stroke">שנה ${GAME_DATA.groupLabel}</div>` : ''}
+                  </div>
+                </div>
+            `;
+        };
+
+        const generateBackCardHTML = (isSmall, zIndex) => `
+            <div class="comic-card back ${isSmall ? 'small' : ''}" style="z-index: ${zIndex}">
+                <div class="card-inner-back">
+                    <div class="back-halftone"></div>
+                    <div class="center-oval-back"><span class="back-text">בום!</span></div>
+                </div>
+            </div>
+        `;
+
+        const updateUI = () => {
+            // Screen switching
+            if (state.gameStarted) {
+                document.getElementById('menu-screen').classList.add('hidden');
+                document.getElementById('game-screen').classList.remove('hidden');
+            } else {
+                document.getElementById('menu-screen').classList.remove('hidden');
+                document.getElementById('game-screen').classList.add('hidden');
+            }
+
+            // Top bar
+            document.getElementById('timer-display').innerText = `⏱️ ${formatTime(state.timer)}`;
+            document.getElementById('score-display').innerText = `🤖 ${state.cHand.length} | 🧑 ${state.pHand.length}`;
+
+            // Message
+            document.getElementById('msg-display').innerText = state.msg;
+
+            // Center area
+            document.getElementById('current-group-display').innerText = state.currentGroup || '---';
+            
+            const propStatusEl = document.getElementById('prop-status');
+            if (state.activeProp) {
+                propStatusEl.innerText = `⏳ ${GAME_DATA.propertyLabel}: ${state.activeProp}`;
+                propStatusEl.classList.remove('hidden');
+            } else { propStatusEl.classList.add('hidden'); }
+
+            const comboStatusEl = document.getElementById('combo-status');
+            if (state.activeCombo) { comboStatusEl.classList.remove('hidden'); } 
+            else { comboStatusEl.classList.add('hidden'); }
+
+            const endMsgEl = document.getElementById('end-sequence-msg');
+            if (state.activeProp || state.activeCombo) { endMsgEl.classList.remove('hidden'); } 
+            else { endMsgEl.classList.add('hidden'); }
+
+            const plus2El = document.getElementById('plus2-stack-display');
+            if (state.plus2Stack > 0) {
+                plus2El.innerText = `+${state.plus2Stack}`;
+                plus2El.classList.remove('hidden');
+            } else { plus2El.classList.add('hidden'); }
+
+            // Render Discard Pile
+            const discardPile = document.getElementById('discard-pile');
+            if (state.pile.length > 0) {
+                const topCard = state.pile[state.pile.length - 1];
+                discardPile.innerHTML = generateCardHTML(topCard);
+            } else {
+                discardPile.innerHTML = '';
+            }
+
+            // Render Computer Hand
+            const cHandContainer = document.getElementById('computer-hand');
+            cHandContainer.innerHTML = state.cHand.map((c, i) => generateBackCardHTML(true, i)).join('');
+
+            // Render Player Hand
+            const pHandContainer = document.getElementById('player-hand');
+            pHandContainer.innerHTML = state.pHand.map((c, i) => generateCardHTML(c, {zIndex: i})).join('');
+
+            // Win Modal
+            if (state.winner) {
+                document.getElementById('win-title').innerText = state.winner === 'player' ? '🏆 ניצחון מוחץ!' : '🤖 בום! הפסדתם';
+                document.getElementById('win-time').innerText = `זמן: ${formatTime(state.timer)}`;
+                showModal('win-modal');
+            } else {
+                hideModal('win-modal');
+            }
+        };
+
+        // --- UI Interactions ---
+        const showModal = (id) => document.getElementById(id).classList.remove('hidden');
+        const hideModal = (id) => document.getElementById(id).classList.add('hidden');
+
+        document.getElementById('player-hand').addEventListener('click', (e) => {
+            const cardEl = e.target.closest('.comic-card');
+            if (!cardEl) return;
+            const id = parseInt(cardEl.getAttribute('data-id'));
+            const card = state.pHand.find(c => c.id === id);
+            if (card) playerPlay(card);
+        });
+
+        // --- Game Logic ---
+        const startGame = () => {
+            audio.init();
+            clearInterval(state.timerInterval);
+            clearTimeout(state.computerTimeout);
+
+            let d = [];
+            let idCounter = 1;
+            GAME_DATA.groups.forEach(g => {
+                g.items.forEach(item => {
+                    d.push({ id: idCounter++, group: g.id, word: item.text, prop: item.prop, special: null });
+                });
+            });
+            SPECIALS.forEach(s => {
+                for(let i=0; i<s.count; i++) d.push({ id: idCounter++, special: s.type, label: s.label, group: null });
+            });
+            d = shuffleArray(d);
+
+            const p = d.splice(0, 8);
+            const c = d.splice(0, 8);
+            let first = d.pop();
+            
+            let attempts = 0;
+            while (first && first.special && attempts < 50) { 
+                d.unshift(first); first = d.pop(); attempts++;
+            }
+            if (!first || first.special) {
+                first = { id: 9999, group: GAME_DATA.groups[0].id, word: GAME_DATA.groups[0].items[0].text, special: null };
+            }
+
+            state = {
+                ...state,
+                gameStarted: true,
+                timer: 0,
+                deck: d,
+                pHand: p,
+                cHand: c,
+                pile: [first],
+                currentGroup: first.group,
+                turn: "player",
+                plus2Stack: 0,
+                activeProp: null,
+                activeCombo: null,
+                winner: null,
+                msg: "מוכנים? צאו!"
+            };
+
+            state.timerInterval = setInterval(() => {
+                if (!state.winner) {
+                    state.timer++;
+                    document.getElementById('timer-display').innerText = `⏱️ ${formatTime(state.timer)}`;
+                }
+            }, 1000);
+
+            hideModal('win-modal');
+            hideModal('picker-modal');
+            updateUI();
+        };
+
+        const exitGame = () => {
+            clearInterval(state.timerInterval);
+            clearTimeout(state.computerTimeout);
+            state.gameStarted = false;
+            hideModal('win-modal');
+            hideModal('instructions-modal');
+            hideModal('picker-modal');
+            updateUI();
+        };
+
+        const drawCardsLogic = (qty) => {
+            let drawn = [];
+            
+            if (state.deck.length < qty && state.pile.length > 1) {
+                const recycle = shuffleArray(state.pile.slice(0, state.pile.length - 1));
+                state.deck = [...state.deck, ...recycle];
+                state.pile = [state.pile[state.pile.length - 1]];
+            }
+            
+            for (let i = 0; i < qty && state.deck.length > 0; i++) {
+                drawn.push(state.deck.pop());
+            }
+            return drawn;
+        };
+
+        const handleDeckClick = () => {
+            if (state.turn !== "player" || state.winner) return;
+
+            if (state.activeProp || state.activeCombo) {
+                state.activeProp = null; 
+                state.activeCombo = null; 
+                state.msg = "סיימתם את הרצף. תור המחשב.";
+                endPlayerTurn(); 
+                return;
+            }
+
+            const qty = state.plus2Stack > 0 ? state.plus2Stack : 1;
+            const drawn = drawCardsLogic(qty);
+            
+            if (drawn.length > 0) {
+                state.pHand = [...state.pHand, ...drawn];
+                state.msg = `לקחתם ${drawn.length} קלפים`;
+                audio.play("flip");
+            }
+            state.plus2Stack = 0; 
+            endPlayerTurn();
+        };
+
+        const endPlayerTurn = () => {
+            state.turn = "computer";
+            updateUI();
+            scheduleComputerTurn();
+        };
+
+        const playerPlay = (card) => {
+            if (state.turn !== "player" || state.winner) return;
+
+            if (state.activeProp) {
+                if (card.prop !== state.activeProp && !card.special) {
+                    state.msg = `מותר רק: ${state.activeProp}`; updateUI(); return;
+                }
+            } else if (state.activeCombo) {
+                if (card.group !== state.activeCombo && !card.special) {
+                    state.msg = `מותר רק ${GAME_DATA.groupLabel}: ${state.activeCombo}`; updateUI(); return;
+                }
+            } else {
+                if (state.plus2Stack > 0 && card.special !== "plus2") {
+                    state.msg = "שימו +2 או משכו מהקופה!"; updateUI(); return;
+                }
+                if (!card.special && card.group !== state.currentGroup) {
+                    state.msg = `לא אותו ${GAME_DATA.groupLabel}!`; updateUI(); return;
+                }
+            }
+
+            // Execute move
+            state.pHand = state.pHand.filter(c => c.id !== card.id);
+            state.pile.push(card);
+            audio.play("place");
+
+            if (state.pHand.length === 0) {
+                state.winner = "player"; 
+                audio.play("win"); 
+                clearInterval(state.timerInterval);
+                updateUI(); 
+                return;
+            }
+
+            if (card.group) state.currentGroup = card.group;
+
+            if (state.activeProp || state.activeCombo) {
+                if (["changeProp", "changeGroup", "stop", "plus2"].includes(card.special)) {
+                     state.activeProp = null; state.activeCombo = null;
+                }
+            }
+
+            if (card.special === "changeProp") { openPicker('prop'); return; }
+            if (card.special === "changeGroup") { openPicker('group'); return; }
+            if (card.special === "combo") { state.activeCombo = card.group || state.currentGroup; state.msg = "הכל הולך!"; updateUI(); return; }
+            if (card.special === "plus2") { state.plus2Stack += 2; state.activeProp = null; state.activeCombo = null; endPlayerTurn(); return; }
+            if (card.special === "stop") { state.msg = "בום! תור נוסף שלכם."; state.activeProp = null; state.activeCombo = null; updateUI(); return; }
+
+            if (state.activeProp || state.activeCombo) {
+                updateUI(); return; // Keep turn
+            }
+
+            endPlayerTurn();
+        };
+
+        const openPicker = (mode) => {
+            state.pickerMode = mode;
+            const titleEl = document.getElementById('picker-title');
+            const optionsEl = document.getElementById('picker-options');
+            const handEl = document.getElementById('picker-hand-peek');
+
+            if (mode === 'group') {
+                titleEl.innerText = `בחרו ${GAME_DATA.groupLabel}:`;
+                optionsEl.innerHTML = GAME_DATA.groups.map(r => 
+                    `<button class="comic-opt-btn" onclick="handlePickGroup('${r.id}')">${r.id}</button>`
+                ).join('');
+            } else {
+                titleEl.innerText = `בחרו ${GAME_DATA.propertyLabel}:`;
+                optionsEl.innerHTML = GAME_DATA.properties.map(opt => 
+                    `<button class="comic-opt-btn" onclick="handlePickProp('${opt}')">${opt}</button>`
+                ).join('');
+            }
+
+            handEl.innerHTML = state.pHand.map(c => {
+                const bg = c.special ? getSpecialColor(c.special) : REGULAR_CARD_COLOR;
+                const textColor = c.special ? bg : "#000000";
+                const text = c.special ? c.label : c.word;
+                return `
+                    <div class="mini-card" style="background-color: ${bg}">
+                        <div class="mini-oval">
+                            <span style="color: ${textColor}">${text}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            showModal('picker-modal');
+            updateUI();
+        };
+
+        const handlePickGroup = (r) => {
+            state.currentGroup = r; 
+            state.activeProp = null; 
+            state.msg = `החלפתם ל-${r}`; 
+            hideModal('picker-modal');
+            endPlayerTurn();
+        };
+
+        const handlePickProp = (t) => {
+            state.activeProp = t; 
+            state.msg = `בוא נשנה ל...: ${t}!`; 
+            hideModal('picker-modal');
+            updateUI(); // Keep turn
+        };
+
+        const scheduleComputerTurn = () => {
+            clearTimeout(state.computerTimeout);
+            state.computerTimeout = setTimeout(() => {
+                if (state.turn !== "computer" || state.winner || !state.gameStarted) return;
+                
+                if (state.plus2Stack > 0) {
+                    const hasPlus2 = state.cHand.find(c => c.special === "plus2");
+                    if (hasPlus2) {
+                        state.cHand = state.cHand.filter(x => x.id !== hasPlus2.id);
+                        state.pile.push(hasPlus2);
+                        state.plus2Stack += 2;
+                        state.msg = "המחשב ענה ב-+2!"; audio.play("place"); 
+                        state.turn = "player";
+                    } else {
+                        const drawn = drawCardsLogic(state.plus2Stack);
+                        if(drawn.length > 0){
+                            state.cHand = [...state.cHand, ...drawn];
+                            state.msg = `המחשב נכנע ומשך ${drawn.length}`;
+                            audio.play("flip");
+                        }
+                        state.plus2Stack = 0; 
+                        state.turn = "player";
+                    }
+                    updateUI();
+                    return;
+                }
+
+                const valid = state.cHand.filter(c => c.special || c.group === state.currentGroup);
+
+                if (valid.length > 0) {
+                    const card = valid[Math.floor(Math.random() * valid.length)];
+                    state.cHand = state.cHand.filter(x => x.id !== card.id);
+                    state.pile.push(card);
+                    audio.play("place");
+
+                    if (state.cHand.length === 0) {
+                        state.winner = "computer"; 
+                        clearInterval(state.timerInterval);
+                        updateUI(); 
+                        return;
+                    }
+
+                    if (card.group) state.currentGroup = card.group;
+
+                    if (card.special === "plus2") { 
+                        state.plus2Stack += 2; state.turn = "player"; 
+                    } 
+                    else if (card.special === "stop") { 
+                        state.msg = "עצור!"; 
+                        updateUI();
+                        scheduleComputerTurn(); // Computer goes again
+                        return;
+                    }
+                    else if (card.special === "changeGroup") {
+                        const r = GAME_DATA.groups[Math.floor(Math.random()*GAME_DATA.groups.length)].id;
+                        state.currentGroup = r; state.msg = `שונה ל-${r}`; state.turn = "player";
+                    }
+                    else if (card.special === "changeProp") {
+                        const t = GAME_DATA.properties[Math.floor(Math.random()*GAME_DATA.properties.length)];
+                        state.msg = `בוא נשנה ל...: ${t}`;
+                        const matches = state.cHand.filter(c => c.prop === t && !c.special);
+                        
+                        matches.forEach(m => {
+                            state.cHand = state.cHand.filter(x => x.id !== m.id);
+                            state.pile.push(m);
+                            if(m.group) state.currentGroup = m.group;
+                        });
+                        if(state.cHand.length === 0) state.winner = "computer";
+                        state.turn = "player";
+                    }
+                    else if (card.special === "combo") {
+                        const matches = state.cHand.filter(c => c.group === state.currentGroup && !c.special);
+                        matches.forEach(m => {
+                             state.cHand = state.cHand.filter(x => x.id !== m.id);
+                             state.pile.push(m);
+                        });
+                        state.msg = "הכל הולך!";
+                        if(state.cHand.length === 0) state.winner = "computer";
+                        state.turn = "player";
+                    }
+                    else { state.turn = "player"; }
+                } else {
+                    const drawn = drawCardsLogic(1);
+                    if(drawn.length > 0){
+                        state.cHand = [...state.cHand, ...drawn];
+                        state.msg = `המחשב משך קלף`;
+                        audio.play("flip");
+                    }
+                    state.turn = "player";
+                }
+                updateUI();
+            }, 1500);
+        };
+
+        // Initialize empty UI
+        updateUI();
+
+    </script>
+</body>
+</html>
